@@ -1,0 +1,71 @@
+{
+  "name": "easy-code",
+  "displayName": "Easy Code",
+  "description": "It is a code snippet management extension to organize frequently used code snippets",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "menus": {
+      "editor/context": [
+        {
+          "command": "easy-code.saveSnippet",
+          "when": "editorTextFocus",
+          "group": "navigation"
+        },
+        {
+          "command": "easy-code.useSnippet",
+          "when": "editorTextFocus",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings":[
+      {
+        "command": "easy-code.saveSnippet",
+        "mac": "cmd+alt+s",
+        "key": "ctrl+alt+s",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "easy-code.snippets": {
+          "type": "array",
+          "default": [],
+          "description": "List of user-defined code snippets"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "easy-code.saveSnippet",
+        "title": "Save Selected Code as Snippet"
+      },
+      {
+        "command": "easy-code.useSnippet",
+        "title": "Use Selected Snippet"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.96.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "eslint": "^9.16.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
