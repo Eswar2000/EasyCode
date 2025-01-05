@@ -49,13 +49,12 @@ function activate(context) {
 		let selectedSnippet = await vscode.window.showQuickPick(
 			existingSnippets.map(snippet => ({
 				label: snippet.name,
-				description: snippet.description ? snippet.description : 'No description found',
-				detail: snippet.tags.length > 0 ? snippet.tags.join(', ') : 'No tags attached',
+				description: snippet.description || '',
+				detail: snippet.tags.length > 0 ? snippet.tags.join(' | ') : '',
 				snippetContent: snippet.code
 			})),
 			{
-				placeHolder: 'Search for a code snippet to paste',
-				matchOnDescription: true,
+				placeHolder: 'Search for a easy-code snippet to use',
 				matchOnDetail: true
 			}
 		);
@@ -91,15 +90,6 @@ function storeCodeSnippet(name, description, tags, code){
 		codeSnippets.push({name, description, tags, code});
 		updateCodeSnippet(codeSnippets);
 	}
-
-	console.log(`\n${'='.repeat(40)}`);
-    console.log(`Snippet Saved Successfully!`);
-    console.log(`${'='.repeat(40)}\n`);
-    console.log(`%cName:`, 'color: green; font-weight: bold;', name);
-    console.log(`%cDescription:`, 'color: blue; font-weight: bold;', description);
-    console.log(`%cTags:`, 'color: orange; font-weight: bold;', tags.join(', '));
-    console.log(`%cSnippet:`, 'color: purple; font-weight: bold;', `\n${code}`);
-    console.log(`\n${'='.repeat(40)}`);
 }
 
 function updateCodeSnippet(snippets){

@@ -47,11 +47,13 @@
     "commands": [
       {
         "command": "easy-code.saveSnippet",
-        "title": "Save Selected Code as Snippet"
+        "category": "Easy-Code",
+        "title": "Save Code Snippets"
       },
       {
         "command": "easy-code.useSnippet",
-        "title": "Use Selected Snippet"
+        "category": "Easy-Code",
+        "title": "Use Code Snippets"
       }
     ]
   },
