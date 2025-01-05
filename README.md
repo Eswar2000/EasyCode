@@ -1,65 +1,38 @@
-# easy-code README
+# Easy-Code: VSCode Extension
 
-This is the README for your extension "easy-code". After writing up a brief description, we recommend including the following sections.
+Easy-Code is a powerful and user-friendly Visual Studio Code extension designed to help developers efficiently manage, organize, and reuse code blocks.
 
-## Features
+## 🚀 Introduction
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Easy-Code allows you to save, organize, and reuse code snippets directly within VSCode. By reducing repetitive typing and speeding up your workflow, this extension is ideal for developers looking to optimize their productivity. Quickly store frequently used code blocks and insert them into your editor with just a few clicks or a simple keyboard shortcut.
 
-For example if there is an image subfolder under your extension project workspace:
+Say goodbye to rewriting common code and hello to more efficient development!
 
-\!\[feature X\]\(images/feature-x.png\)
+## 🛠️ Features
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- 💾 Save and Organize Code Blocks: Easily store your most-used code snippets for future use. Categorize them for better management.
+- ⚡ Quick Insertion: Insert your saved code blocks into the editor with a single command, saving you time and reducing errors.
+- 🔍 Fast Access with Search: Locate the exact snippet you need in seconds with the powerful search feature.
+- 📂 Customizable Categories: Organize your snippets with different tags to keep them well-structured and easy to find.
 
-## Requirements
+## 📦 Installation (Coming Soon!)
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Hold your horses! 🐎 We're just putting the final touches on Easy-Code before it's available on the VS Code Marketplace. Stay tuned — your workflow will soon get a major productivity boost!
 
-## Extension Settings
+1. Open your VSCode editor.
+2. Go to the Extensions view by clicking on the Extensions icon in the Activity Bar on the side of the window.
+3. Search for Easy-Code and click Install.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## 🖱️ Usage
 
-For example:
+To create a code snippet item, do the following:
+1. Type out your code snippet in an editor (or have it handy from any of your project code).
+2. Select the code that is to be saved for later with the cursor.
+3. Right click and do "Save Code Snippets".
+4. Fill in prompted information (a short name, description and comma-separated tags for faster search) save it.
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+To use any code snippet in your code, do the following:
+1. Place the cursor at the location where you want a specific snippet to be inserted.
+2. Right click and do "Use Code Snippets".
+3. Identify the snippet to be added to your editor from the list (You can filter essential code snippet through filtering).
+4. There you go! As you select the snippet you want, the snippet is ready at your editor!
