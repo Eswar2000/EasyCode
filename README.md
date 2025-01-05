@@ -42,4 +42,4 @@ Hold your horses! 🐎 We're just putting the final touches on Easy-Code before 
 ## 🎥 Get a Sneek Peek
 
 **See the magic in action!** Watch how this extension makes your workflow smoother and faster. 🎯
-![Watch the video](./media/easy-code-demo.gif)
+![Watch the video](https://github.com/user-attachments/assets/8094f6fc-8f1e-4219-bf27-5f0e0d8ed2f6)
