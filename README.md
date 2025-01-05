@@ -10,10 +10,10 @@ Say goodbye to rewriting common code and hello to more efficient development!
 
 ## 🛠️ Features
 
-- 💾 Save and Organize Code Blocks: Easily store your most-used code snippets for future use. Categorize them for better management.
-- ⚡ Quick Insertion: Insert your saved code blocks into the editor with a single command, saving you time and reducing errors.
-- 🔍 Fast Access with Search: Locate the exact snippet you need in seconds with the powerful search feature.
-- 📂 Customizable Categories: Organize your snippets with different tags to keep them well-structured and easy to find.
+- 💾 **Save and Organize Code Blocks:** Easily store your most-used code snippets for future use. Categorize them for better management.
+- ⚡ **Quick Insertion:** Insert your saved code blocks into the editor with a single command, saving you time and reducing errors.
+- 🔍 **Fast Access with Search:** Locate the exact snippet you need in seconds with the powerful search feature.
+- 📂 **Customizable Categories:** Organize your snippets with different tags to keep them well-structured and easy to find.
 
 ## 📦 Installation (Coming Soon!)
 
@@ -38,3 +38,8 @@ Hold your horses! 🐎 We're just putting the final touches on Easy-Code before 
 2. Right click and do "Use Code Snippets".
 3. Identify the snippet to be added to your editor from the list (You can filter essential code snippet through filtering).
 4. There you go! As you select the snippet you want, the snippet is ready at your editor!
+
+## 🎥 Get a Sneek Peek
+
+**See the magic in action!** Watch how this extension makes your workflow smoother and faster. 🎯
+[![Watch the video](https://img.youtube.com/vi/9mp9yTiicsg/maxresdefault.jpg)](https://youtu.be/9mp9yTiicsg)
