@@ -25,13 +25,15 @@ Hold your horses! 🐎 We're just putting the final touches on Easy-Code before 
 
 ## 🖱️ Usage
 
-To create a code snippet item, do the following:
+### To create a code snippet item, do the following:
+
 1. Type out your code snippet in an editor (or have it handy from any of your project code).
 2. Select the code that is to be saved for later with the cursor.
 3. Right click and do "Save Code Snippets".
 4. Fill in prompted information (a short name, description and comma-separated tags for faster search) save it.
 
-To use any code snippet in your code, do the following:
+### To use any code snippet in your code, do the following:
+
 1. Place the cursor at the location where you want a specific snippet to be inserted.
 2. Right click and do "Use Code Snippets".
 3. Identify the snippet to be added to your editor from the list (You can filter essential code snippet through filtering).
