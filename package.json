@@ -12,50 +12,25 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "menus": {
-      "editor/context": [
+    "viewsContainers": {
+      "activitybar": [
         {
-          "command": "easy-code.saveSnippet",
-          "when": "editorTextFocus",
-          "group": "navigation"
-        },
-        {
-          "command": "easy-code.useSnippet",
-          "when": "editorTextFocus",
-          "group": "navigation"
+          "id": "easy-code-view",
+          "title": "Easy Code",
+          "icon": "media/infinite-logo.svg"
         }
       ]
     },
-    "keybindings":[
-      {
-        "command": "easy-code.saveSnippet",
-        "mac": "cmd+alt+s",
-        "key": "ctrl+alt+s",
-        "when": "editorTextFocus"
-      }
-    ],
-    "configuration": {
-      "type": "object",
-      "properties": {
-        "easy-code.snippets": {
-          "type": "array",
-          "default": [],
-          "description": "List of user-defined code snippets"
+    "views": {
+      "easy-code-view": [
+        {
+          "type": "webview",
+          "id": "easy-code-sidebar-panel",
+          "name": "Easy Code",
+          "icon": "media/innovate-logo.svg"
         }
-      }
-    },
-    "commands": [
-      {
-        "command": "easy-code.saveSnippet",
-        "category": "Easy-Code",
-        "title": "Save Code Snippets"
-      },
-      {
-        "command": "easy-code.useSnippet",
-        "category": "Easy-Code",
-        "title": "Use Code Snippets"
-      }
-    ]
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint .",
