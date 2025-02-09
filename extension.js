@@ -1,15 +1,8 @@
 const vscode = require('vscode');
 
 function activate(context) {
-	// Sample data for snippets
-	// const snippets = [
-	// 	{ name: 'Snippet 1', description: 'This is snippet 1, useful in many scenarios.', tags: ['tag1', 'js'], code: 'console.log("Hello, World!");' },
-	// 	{ name: 'Snippet 2', description: 'Snippet 2, useful for variable declarations.', tags: ['tag2', 'var'], code: 'const x = 10;' },
-	// ];
-	const snippets = vscode.workspace.getConfiguration('easy-code').get('snippets');
-
 	// Register the WebviewViewProvider
-	const snippetViewProvider = new SnippetViewProvider(context, snippets);
+	const snippetViewProvider = new SnippetViewProvider();
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider('easy-code-sidebar-panel', snippetViewProvider)
 	);
@@ -17,15 +10,24 @@ function activate(context) {
 
 // The SnippetViewProvider is responsible for displaying the snippets in the sidebar
 class SnippetViewProvider {
-	constructor(context, snippets) {
-		this.context = context;
-		this.snippets = snippets;
+	constructor() {
+		this.loadSnippets();
+	}
+
+	loadSnippets() {
+		this.snippets = vscode.workspace.getConfiguration('easy-code').get('snippets', []);
+	}
+
+	updateSnippetsConfiguration() {
+		vscode.workspace.getConfiguration('easy-code').update('snippets', this.snippets);
 	}
 
 	resolveWebviewView(webviewView) {
+
 		webviewView.webview.options = {
 			enableScripts: true,
 		};
+
 
 		webviewView.webview.html = this.getWebviewContent(this.snippets);
 
@@ -43,15 +45,42 @@ class SnippetViewProvider {
 					}
 					break;
 				case 'deleteSnippet':
-					const index = this.snippets.findIndex(snippet => snippet.name === message.snippetName);
-					if (index !== -1) {
-						this.snippets.splice(index, 1);
+					let deleteIndex = this.snippets.findIndex(snippet => snippet.name === message.snippetName);
+					if (deleteIndex !== -1) {
+						this.snippets.splice(deleteIndex, 1);
+						this.updateSnippetsConfiguration();
 						webviewView.webview.html = this.getWebviewContent(this.snippets);
 					}
 					break;
-			}
-		});
-	}
+				case 'createSnippet':
+					
+					let editor = vscode.window.activeTextEditor;
+					let selectedCode = "";
+
+					if(editor){
+						selectedCode = editor.document.getText(editor.selection);
+					}
+
+					let snippetName = message.snippet.name;
+					let snippetDescription = message.snippet.description;
+					let snippetTags = message.snippet.tags.split(',').map(tag => tag.trim());
+					let snippetIndex = this.snippets.findIndex(snippet => snippet.name === snippetName);
+					let newSnippet = {
+						name: snippetName,
+						description: snippetDescription,
+						tags: snippetTags,
+						code: selectedCode
+					}
+
+					if (selectedCode && snippetIndex === -1) {
+						this.snippets.push(newSnippet);
+						this.updateSnippetsConfiguration();
+						webviewView.webview.html = this.getWebviewContent(this.snippets);
+					}
+					break;
+				}
+			});
+		}
 
 	getWebviewContent() {
 		return `
@@ -80,21 +109,174 @@ class SnippetViewProvider {
 					font-weight: 600;
 				}
 
-				/* Search bar styling */
-				.search-bar {
-					margin-bottom: 20px;
-					padding: 6px 10px;
+				/* Search bar and create snippet button styling */
+				#search-create-container {
 					width: 100%;
+					display: flex;
+					align-items: center;
+					box-sizing: border-box;
+					margin-bottom: 10px;
+				}
+
+				.search-bar {
+					flex: 1 0 75%;
+					margin-right: 10px;
+					padding: 6px 10px;
 					font-size: 14px;
 					border-radius: 4px;
 					border: 1px solid var(--vscode-input-border);
 					background-color: var(--vscode-input-background);
 					color: var(--vscode-input-foreground);
 					box-sizing: border-box;
-					display: block;
 				}
 
-				/* Code snippet item styling */
+				.search-bar:hover {
+					border-color: var(--vscode-button-hoverBorder);
+				}
+					
+				.search-bar:active {
+					border-color: var(--vscode-button-pressedBorder);
+				}
+
+				.create-snippet-btn {
+					flex: 0 0 auto;
+					padding: 6px 12px;
+					font-size: 14px;
+					border-radius: 16px;
+					background-color: var(--vscode-button-background);
+					color: var(--vscode-button-foreground);
+					border: 1px solid var(--vscode-button-border);
+					cursor: pointer;
+					transition: background-color 0.2s ease, border-color 0.2s ease;
+				}
+
+				.create-snippet-btn:hover {
+					background-color: var(--vscode-button-hoverBackground);
+					border-color: var(--vscode-button-hoverBorder);
+				}
+
+				.create-snippet-btn:focus {
+					outline: none;
+					box-shadow: 0 0 0 2px var(--vscode-focusBorder);
+				}
+
+				.create-snippet-btn:active {
+					background-color: var(--vscode-button-pressedBackground);
+					border-color: var(--vscode-button-pressedBorder);
+				}
+
+				/* Snippet creation form styling */
+				#create-snippet-form {
+					padding: 15px;
+					background-color: var(--vscode-input-background);
+					border-radius: 6px;
+					box-shadow: var(--vscode-input-box-shadow);
+					display: none;
+            	}
+
+				.form-input {
+					font-size: 14px;
+					padding: 8px;
+					border-radius: 4px;
+					border: 1px solid var(--vscode-input-border);
+					background-color: var(--vscode-input-background);
+					color: var(--vscode-input-foreground);
+					width: 100%;
+					box-sizing: border-box;
+					margin-bottom: 10px;
+				}
+
+				.form-input:focus {
+					outline: none;
+					box-shadow: 0 0 0 2px var(--vscode-focusBorder);
+				}
+
+				.form-textarea {
+					font-size: 14px;
+					padding: 8px;
+					border-radius: 4px;
+					border: 1px solid var(--vscode-input-border);
+					background-color: var(--vscode-input-background);
+					color: var(--vscode-input-foreground);
+					width: 100%;
+					box-sizing: border-box;
+					margin-bottom: 10px;
+					resize: vertical;
+				}
+
+				.form-textarea:focus {
+					outline: none;
+					box-shadow: 0 0 0 2px var(--vscode-focusBorder);
+				}
+
+				.form-input, .form-textarea {
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+				}
+
+				.form-btn-container {
+					display: flex;
+					justify-content: flex-start;
+				}
+
+				.form-btn {
+					background-color: var(--vscode-button-background);
+					color: var(--vscode-button-foreground);
+					cursor: pointer;
+					padding: 6px 12px;
+					border-radius: 4px;
+					border: 1px solid var(--vscode-button-border);
+					width: auto;
+					transition: background-color 0.2s ease, border-color 0.2s ease;
+					margin-right: 5px;
+				}
+
+				.form-btn:hover {
+					background-color: var(--vscode-button-hoverBackground);
+					border-color: var(--vscode-button-hoverBorder);
+				}
+
+				.form-btn:active {
+					background-color: var(--vscode-button-pressedBackground);
+					border-color: var(--vscode-button-pressedBorder);
+				}
+
+				.cancel-btn {
+					background-color: transparent;
+					color: var(--vscode-button-foreground);
+					cursor: pointer;
+					padding: 6px 12px;
+					border-radius: 4px;
+					border: 1px solid var(--vscode-button-border);
+				}
+
+				/* Message container styling */
+				 #message-container {
+					margin-top: 10px;
+					margin-bottom: 10px;
+					padding: 8px;
+					border-radius: 5px;
+					font-size: 12px;
+					text-align: center;
+					transition: opacity 0.5s ease-out;
+				}
+
+				.message-success {
+					background-color: #d4edda;
+					color: #155724;
+					border: 1px solid #c3e6cb;
+				}
+
+				.message-error {
+					background-color: #f8d7da;
+					color: #721c24;
+					border: 1px solid #f5c6cb;
+				}
+
+				/* Code snippet items styling */
+				#snippets-list {
+					display: block;
+				}
+				
 				.snippet-card {
 					background-color: var(--vscode-list-background);
 					border-radius: 6px;
@@ -164,10 +346,6 @@ class SnippetViewProvider {
 					padding: 0;
 				}
 
-				.snippet-actions button:hover {
-					opacity: 0.8;
-				}
-
 				.snippet-actions button:focus {
 					outline: none;
 				}
@@ -184,14 +362,33 @@ class SnippetViewProvider {
 
 				.snippet-actions button:hover .codicon-add,
 				.snippet-actions button:hover .codicon-trash {
-					color: var(--vscode-button-hoverForeground);
+					opacity: 0.4;
 				}
 			</style>
 		</head>
 		<body>
-			<input type="text" class="search-bar" id="searchInput" placeholder="Search snippets by name or tags" oninput="filterSnippets()" />
-			
-			<div id="snippetsList">
+			<div id="search-create-container">
+				<input type="text" class="search-bar" id="searchInput" placeholder="Search snippets by name or tags" oninput="filterSnippets()" />
+				<button class="create-snippet-btn" title="Create Snippet" onclick="showCreateSnippetForm()">
+					<span class="codicon codicon-new-file" />
+				</button>
+			</div>
+			<div id="message-container">
+				<p id="message-text"></p>
+			</div>
+
+			<div id="create-snippet-form">
+				<h2>Create a New Snippet</h2>
+				<input class="form-input" type="text" id="snippetName" placeholder="Snippet Name" required />
+				<input class="form-input" type="text" id="snippetTags" placeholder="Tags (comma-separated)" />
+				<textarea class="form-textarea" id="snippetDescription" placeholder="Description" rows="4"></textarea>
+				<div class="form-btn-container">
+					<button id="confirm-btn" class="form-btn" onclick="submitCreateSnippetForm()">Submit</button>
+					<button class="cancel-btn" onclick="hideCreateSnippetForm()">Cancel</button>
+				</div>
+			</div>
+						
+			<div id="snippets-list">
 				${this.snippets.map(snippet => `
 					<div class="snippet-card" data-name="${snippet.name}" data-tags="${snippet.tags.join(',')}">
 						<h3>${snippet.name}</h3>
@@ -224,6 +421,13 @@ class SnippetViewProvider {
 						snippetName: snippetName
 					});
 				}
+
+				function createSnippet(snippet) {
+					vscode.postMessage({
+						command: 'createSnippet',
+						snippet: snippet
+					});
+				}
 	
 				function filterSnippets() {
 					const searchQuery = document.getElementById("searchInput").value.toLowerCase();
@@ -240,6 +444,61 @@ class SnippetViewProvider {
 						}
 					});
 				}
+
+				function showCreateSnippetForm() {
+					document.getElementById('create-snippet-form').style.display = 'block';
+					document.getElementById('snippets-list').style.display = 'none';
+				}
+
+				function hideCreateSnippetForm() {
+					document.getElementById('snippetName').value = '';
+					document.getElementById('snippetTags').value = '';
+					document.getElementById('snippetDescription').value = '';
+					document.getElementById('create-snippet-form').style.display = 'none';
+					document.getElementById('snippets-list').style.display = 'block';
+				}
+
+				function submitCreateSnippetForm(){
+					let snippetName = document.getElementById('snippetName').value.trim();
+					let snippetTags = document.getElementById('snippetTags').value.trim();
+					let snippetDescription = document.getElementById('snippetDescription').value.trim();
+
+					if (!snippetName || !snippetTags || !snippetDescription) {
+						showMessage('Snippet name, tags and description are mandatory fields!', 'error');
+						return;
+					}
+
+					let snippet = {
+						'name': snippetName,
+						'tags': snippetTags,
+						'description': snippetDescription
+					};
+
+					createSnippet(snippet);
+					hideCreateSnippetForm();
+					
+
+				}
+
+				function showMessage(message, type) {
+					let messageContainer = document.getElementById('message-container');
+					let messageText = document.getElementById('message-text');
+
+					messageText.textContent = message;
+
+					if (type === 'success') {
+						messageContainer.className = 'message-success';
+					} else if (type === 'error') {
+						messageContainer.className = 'message-error';
+					}
+
+					messageContainer.style.display = 'block';
+
+					setTimeout(() => {
+						messageContainer.style.display = 'none';
+					}, 5000);
+				}
+
 			</script>
 		</body>
 		</html>`;

@@ -30,6 +30,16 @@
           "icon": "media/innovate-logo.svg"
         }
       ]
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "easy-code.snippets": {
+          "type": "array",
+          "default": [],
+          "description": "List of user-defined code snippets"
+        }
+      }
     }
   },
   "scripts": {
