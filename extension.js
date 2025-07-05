@@ -31,7 +31,7 @@ class SnippetViewProvider {
 
 		webviewView.webview.html = this.getWebviewContent(this.snippets);
 
-		webviewView.webview.onDidReceiveMessage(message => {
+		webviewView.webview.onDidReceiveMessage(async message => {
 			switch (message.command) {
 				case 'insertSnippet':
 					const snippet = this.snippets.find(snippet => snippet.name === message.snippetName);
@@ -44,6 +44,7 @@ class SnippetViewProvider {
 						}
 					}
 					break;
+
 				case 'deleteSnippet':
 					let deleteIndex = this.snippets.findIndex(snippet => snippet.name === message.snippetName);
 					if (deleteIndex !== -1) {
@@ -52,15 +53,13 @@ class SnippetViewProvider {
 						webviewView.webview.html = this.getWebviewContent(this.snippets);
 					}
 					break;
+
 				case 'createSnippet':
-					
 					let editor = vscode.window.activeTextEditor;
 					let selectedCode = "";
-
 					if(editor){
 						selectedCode = editor.document.getText(editor.selection);
 					}
-
 					let snippetName = message.snippet.name;
 					let snippetDescription = message.snippet.description;
 					let snippetTags = message.snippet.tags.split(',').map(tag => tag.trim());
@@ -71,11 +70,24 @@ class SnippetViewProvider {
 						tags: snippetTags,
 						code: selectedCode
 					}
-
 					if (selectedCode && snippetIndex === -1) {
 						this.snippets.push(newSnippet);
 						this.updateSnippetsConfiguration();
 						webviewView.webview.html = this.getWebviewContent(this.snippets);
+					}
+					break;
+
+				case 'previewSnippet':
+					const previewSnippet = this.snippets.find(s => s.name === message.snippetName);
+					if (previewSnippet) {
+						const doc = await vscode.workspace.openTextDocument({
+							content: previewSnippet.code,
+							language: 'plaintext'
+						});
+						vscode.window.showTextDocument(doc, {
+							preview: true,
+							viewColumn: vscode.ViewColumn.One
+						});
 					}
 					break;
 				}
@@ -355,13 +367,15 @@ class SnippetViewProvider {
 				}
 
 				.codicon-add,
-				.codicon-trash {
+				.codicon-trash,
+				.codicon-eye {
 					font-size: 16px;
 					color: var(--vscode-button-foreground);
 				}
 
 				.snippet-actions button:hover .codicon-add,
-				.snippet-actions button:hover .codicon-trash {
+				.snippet-actions button:hover .codicon-trash,
+				.snippet-actions button:hover .codicon-eye {
 					opacity: 0.4;
 				}
 			</style>
@@ -400,6 +414,9 @@ class SnippetViewProvider {
 							<button class="delete" title="Delete Snippet" onclick="deleteSnippet('${snippet.name}')">
 								<span class="codicon codicon-trash"></span>
 							</button>
+							<button class="preview" title="Preview Snippet" onclick="previewSnippet('${snippet.name}')">
+								<span class="codicon codicon-eye"></span>
+							</button>
 						</div>
 					</div>
 				`).join('')}
@@ -426,6 +443,13 @@ class SnippetViewProvider {
 					vscode.postMessage({
 						command: 'createSnippet',
 						snippet: snippet
+					});
+				}
+
+				function previewSnippet(snippetName) {
+					vscode.postMessage({
+						command: 'previewSnippet',
+						snippetName: snippetName
 					});
 				}
 	
