@@ -18,6 +18,7 @@ class SnippetViewProvider {
 
     // Resolve the webview view
     resolveWebviewView(webviewView) {
+        this._webviewView = webviewView;
         webviewView.webview.options = {
             enableScripts: true,
         };
@@ -40,7 +41,7 @@ class SnippetViewProvider {
                     break;
 
                 case 'createSnippet':
-                    await this.handleCreateSnippet(message.snippet, webviewView);
+                    await this.handleCreateSnippet();
                     break;
 
                 case 'previewSnippet':
@@ -90,8 +91,8 @@ class SnippetViewProvider {
     }
 
     // Handle creating a new snippet
-    async handleCreateSnippet(snippetData, webviewView) {
-        let editor = vscode.window.activeTextEditor;
+    async handleCreateSnippet() {
+        const editor = vscode.window.activeTextEditor;
         let selectedCode = "";
         if (editor) {
             selectedCode = editor.document.getText(editor.selection);
@@ -102,24 +103,76 @@ class SnippetViewProvider {
             return;
         }
 
-        let snippetName = snippetData.name;
-        let snippetDescription = snippetData.description;
-        let snippetTags = snippetData.tags.split(',').map(tag => tag.trim());
-        let snippetIndex = this.snippets.findIndex(s => s.name === snippetName);
+        // Prompt for snippet name
+        const snippetName = await vscode.window.showInputBox({
+            prompt: 'Enter a name for your code snippet',
+            placeHolder: 'Snippet name',
+            validateInput: text => text && text.trim().length > 0 ? null : 'Name cannot be empty'
+        });
+        if (!snippetName) return;
 
+        // Prompt for snippet description
+        const snippetDescription = await vscode.window.showInputBox({
+            prompt: 'Enter a description for your code snippet',
+            placeHolder: 'Snippet description',
+            validateInput: text => text && text.trim().length > 0 ? null : 'Description cannot be empty'
+        });
+        if (!snippetDescription) return;
+
+        // Prompt for tags (multi-select QuickPick with custom entry)
+        const tagSuggestions = ['javascript', 'typescript', 'react', 'node', 'html', 'css', 'express', 'api', 'frontend', 'backend'];
+        let allTags = [...tagSuggestions];
+        let selectedTags = [];
+        const quickPick = vscode.window.createQuickPick();
+        quickPick.items = allTags.map(label => ({ label }));
+        quickPick.canSelectMany = true;
+        quickPick.title = 'Select tags for your snippet';
+        quickPick.placeholder = 'Pick tags or type a new tag and press Enter to add';
+
+        let lastValue = '';
+        quickPick.onDidChangeValue(value => {
+            lastValue = value;
+        });
+
+        const snippetTags = await new Promise(resolve => {
+            quickPick.onDidAccept(() => {
+                // If user typed a custom value and pressed Enter, add it to the list
+                if (
+                    lastValue &&
+                    !allTags.includes(lastValue) &&
+                    !quickPick.items.some(item => item.label === lastValue)
+                ) {
+                    // Preserve previous selections
+                    const prevSelectedLabels = quickPick.selectedItems.map(item => item.label);
+                    allTags = [lastValue, ...allTags];
+                    quickPick.items = allTags.map(label => ({ label }));
+                    // Restore previous selections and add the new one
+                    quickPick.selectedItems = quickPick.items.filter(item => prevSelectedLabels.includes(item.label) || item.label === lastValue);
+                    quickPick.value = '';
+                    lastValue = '';
+                    quickPick.title = 'Select tags for your snippet';
+                    quickPick.placeholder = 'Pick tags or type a new tag and press Enter to add';
+                    return; // Don't close, let user keep picking
+                }
+                resolve(quickPick.selectedItems.map(item => item.label));
+                quickPick.hide();
+            });
+            quickPick.show();
+        });
+
+        let snippetIndex = this.snippets.findIndex(s => s.name === snippetName);
         if (snippetIndex !== -1) {
             const action = await vscode.window.showWarningMessage(
                 `Snippet "${snippetName}" already exists. Do you want to overwrite it?`,
                 'Overwrite',
                 'Cancel'
             );
-            
             if (action !== 'Overwrite') {
                 return;
             }
         }
 
-        let newSnippet = {
+        const newSnippet = {
             name: snippetName,
             description: snippetDescription,
             tags: snippetTags,
@@ -131,9 +184,11 @@ class SnippetViewProvider {
         } else {
             this.snippets[snippetIndex] = newSnippet;
         }
-        
         this.updateSnippetsConfiguration();
-        webviewView.webview.html = getWebviewContent(this.snippets);
+        // Reload the webview to show updated snippets
+        if (this._webviewView) {
+            this._webviewView.webview.html = getWebviewContent(this.snippets);
+        }
         vscode.window.showInformationMessage(`Snippet "${snippetName}" has been saved successfully!`);
     }
 

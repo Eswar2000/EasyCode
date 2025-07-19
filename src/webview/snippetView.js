@@ -30,27 +30,11 @@ function getWebviewBody(snippets) {
     return `
         <div id="search-create-container">
             <input type="text" class="search-bar" id="searchInput" placeholder="Search snippets by name or tags" oninput="filterSnippets()" />
-            <button class="create-snippet-btn" title="Create Snippet" onclick="showCreateSnippetForm()">
+            <button class="create-snippet-btn" title="Create Snippet" onclick="triggerNativeSnippetCreation()">
                 <span class="codicon codicon-new-file" />
             </button>
         </div>
-        ${getCreateSnippetForm()}
         ${getSnippetsList(snippets)}`;
-}
-
-// Get the create snippet form HTML
-function getCreateSnippetForm() {
-    return `
-        <div id="create-snippet-form">
-            <h2>Create a New Snippet</h2>
-            <input class="form-input" type="text" id="snippetName" placeholder="Snippet Name" required />
-            <input class="form-input" type="text" id="snippetTags" placeholder="Tags (comma-separated)" />
-            <textarea class="form-textarea" id="snippetDescription" placeholder="Description" rows="4"></textarea>
-            <div class="form-btn-container">
-                <button id="confirm-btn" class="form-btn" onclick="submitCreateSnippetForm()">Submit</button>
-                <button class="cancel-btn" onclick="hideCreateSnippetForm()">Cancel</button>
-            </div>
-        </div>`;
 }
 
 // Get the snippets list HTML
@@ -150,90 +134,6 @@ function getWebviewStyles() {
         .create-snippet-btn:active {
             background-color: var(--vscode-button-pressedBackground);
             border-color: var(--vscode-button-pressedBorder);
-        }
-
-        /* Snippet creation form styling */
-        #create-snippet-form {
-            padding: 15px;
-            background-color: var(--vscode-input-background);
-            border-radius: 6px;
-            box-shadow: var(--vscode-input-box-shadow);
-            display: none;
-        }
-
-        .form-input {
-            font-size: 14px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid var(--vscode-input-border);
-            background-color: var(--vscode-input-background);
-            color: var(--vscode-input-foreground);
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
-
-        .form-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--vscode-focusBorder);
-        }
-
-        .form-textarea {
-            font-size: 14px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid var(--vscode-input-border);
-            background-color: var(--vscode-input-background);
-            color: var(--vscode-input-foreground);
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            resize: vertical;
-        }
-
-        .form-textarea:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--vscode-focusBorder);
-        }
-
-        .form-input, .form-textarea {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-        }
-
-        .form-btn-container {
-            display: flex;
-            justify-content: flex-start;
-        }
-
-        .form-btn {
-            background-color: var(--vscode-button-background);
-            color: var(--vscode-button-foreground);
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid var(--vscode-button-border);
-            width: auto;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-            margin-right: 5px;
-        }
-
-        .form-btn:hover {
-            background-color: var(--vscode-button-hoverBackground);
-            border-color: var(--vscode-button-hoverBorder);
-        }
-
-        .form-btn:active {
-            background-color: var(--vscode-button-pressedBackground);
-            border-color: var(--vscode-button-pressedBorder);
-        }
-
-        .cancel-btn {
-            background-color: transparent;
-            color: var(--vscode-button-foreground);
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid var(--vscode-button-border);
         }
 
         /* Code snippet items styling */
@@ -383,36 +283,10 @@ function getWebviewScripts() {
                 });
             }
 
-            function showCreateSnippetForm() {
-                document.getElementById('create-snippet-form').style.display = 'block';
-                document.getElementById('snippets-list').style.display = 'none';
-            }
-
-            function hideCreateSnippetForm() {
-                document.getElementById('snippetName').value = '';
-                document.getElementById('snippetTags').value = '';
-                document.getElementById('snippetDescription').value = '';
-                document.getElementById('create-snippet-form').style.display = 'none';
-                document.getElementById('snippets-list').style.display = 'block';
-            }
-
-            function submitCreateSnippetForm() {
-                let snippetName = document.getElementById('snippetName').value.trim();
-                let snippetTags = document.getElementById('snippetTags').value.trim();
-                let snippetDescription = document.getElementById('snippetDescription').value.trim();
-
-                if (!snippetName || !snippetTags || !snippetDescription) {
-                    return;
-                }
-
-                let snippet = {
-                    'name': snippetName,
-                    'tags': snippetTags,
-                    'description': snippetDescription
-                };
-
-                createSnippet(snippet);
-                hideCreateSnippetForm();
+            function triggerNativeSnippetCreation() {
+                vscode.postMessage({
+                    command: 'createSnippet'
+                });
             }
         </script>`;
 }
