@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const langMap = require('lang-map');
 const { getWebviewContent } = require('../webview/snippetView');
 
 class SnippetViewProvider {
@@ -119,6 +120,38 @@ class SnippetViewProvider {
         });
         if (!snippetDescription) return;
 
+
+        // Robust language inference using lang-map
+        let language = undefined;
+        if (editor && editor.document) {
+            // Try to infer from VS Code's languageId
+            if (editor.document.languageId && editor.document.languageId !== 'plaintext') {
+                language = editor.document.languageId;
+            } else if (editor.document.uri.scheme !== 'untitled') {
+                // Use lang-map for extension to language mapping
+                try {
+                    const fileName = editor.document.fileName;
+                    const ext = fileName.split('.').pop().toLowerCase();
+                    const langs = langMap.languages(ext);
+                    if (langs && langs.length > 0) {
+                        language = langs[0].toLowerCase();
+                    }
+                } catch (err) {
+                    // fallback: do nothing, will prompt user below
+                }
+            }
+        }
+        // If still not found or untitled, prompt user
+        if (!language) {
+            const languageList = [
+                'javascript', 'typescript', 'python', 'java', 'c', 'cpp', 'csharp', 'go', 'ruby', 'php', 'html', 'css', 'json', 'yaml', 'markdown', 'shellscript', 'powershell', 'rust', 'kotlin', 'swift', 'dart', 'sql', 'r', 'perl', 'scala', 'objective-c', 'vue', 'react', 'angular', 'svelte', 'dockerfile', 'makefile', 'plaintext'
+            ];
+            language = await vscode.window.showQuickPick(languageList, {
+                placeHolder: 'Select the language for your snippet (optional)',
+                title: 'Snippet Language'
+            });
+        }
+
         // Prompt for tags (multi-select QuickPick with custom entry)
         const tagSuggestions = ['javascript', 'typescript', 'react', 'node', 'html', 'css', 'express', 'api', 'frontend', 'backend'];
         let allTags = [...tagSuggestions];
@@ -175,6 +208,7 @@ class SnippetViewProvider {
         const newSnippet = {
             name: snippetName,
             description: snippetDescription,
+            language: language,
             tags: snippetTags,
             code: selectedCode
         };
