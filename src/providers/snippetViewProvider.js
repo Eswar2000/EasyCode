@@ -3,6 +3,51 @@ const langMap = require('lang-map');
 const { getWebviewContent } = require('../webview/snippetView');
 
 class SnippetViewProvider {
+    // Generic reusable function for multi-select QuickPick with custom entry
+    async getMultiSelectQuickPick({
+        suggestions = [],
+        title = 'Select items',
+        placeholder = 'Pick items or type a new item and press Enter to add',
+        canSelectMany = true
+    } = {}) {
+        let allItems = [...suggestions];
+        const quickPick = vscode.window.createQuickPick();
+        quickPick.items = allItems.map(label => ({ label }));
+        quickPick.canSelectMany = canSelectMany;
+        quickPick.title = title;
+        quickPick.placeholder = placeholder;
+
+        let lastValue = '';
+        quickPick.onDidChangeValue(value => {
+            lastValue = value;
+        });
+
+        return await new Promise(resolve => {
+            quickPick.onDidAccept(() => {
+                // If user typed a custom value and pressed Enter, add it to the list
+                if (
+                    lastValue &&
+                    !allItems.includes(lastValue) &&
+                    !quickPick.items.some(item => item.label === lastValue)
+                ) {
+                    // Preserve previous selections
+                    const prevSelectedLabels = quickPick.selectedItems.map(item => item.label);
+                    allItems = [lastValue, ...allItems];
+                    quickPick.items = allItems.map(label => ({ label }));
+                    // Restore previous selections and add the new one
+                    quickPick.selectedItems = quickPick.items.filter(item => prevSelectedLabels.includes(item.label) || item.label === lastValue);
+                    quickPick.value = '';
+                    lastValue = '';
+                    quickPick.title = title;
+                    quickPick.placeholder = placeholder;
+                    return; // Don't close, let user keep picking
+                }
+                resolve(quickPick.selectedItems.map(item => item.label));
+                quickPick.hide();
+            });
+            quickPick.show();
+        });
+    }
     constructor() {
         this.loadSnippets();
     }
@@ -141,56 +186,27 @@ class SnippetViewProvider {
                 }
             }
         }
-        // If still not found or untitled, prompt user
+        // If still not found or untitled, prompt user (single select QuickPick)
         if (!language) {
             const languageList = [
                 'javascript', 'typescript', 'python', 'java', 'c', 'cpp', 'csharp', 'go', 'ruby', 'php', 'html', 'css', 'json', 'yaml', 'markdown', 'shellscript', 'powershell', 'rust', 'kotlin', 'swift', 'dart', 'sql', 'r', 'perl', 'scala', 'objective-c', 'vue', 'react', 'angular', 'svelte', 'dockerfile', 'makefile', 'plaintext'
             ];
-            language = await vscode.window.showQuickPick(languageList, {
-                placeHolder: 'Select the language for your snippet (optional)',
-                title: 'Snippet Language'
+            const selected = await this.getMultiSelectQuickPick({
+                suggestions: languageList,
+                title: 'Select the language for your snippet (optional)',
+                placeholder: 'Pick a language or type a new one and press Enter',
+                canSelectMany: false
             });
+            language = selected && selected.length > 0 ? selected[0] : undefined;
         }
 
         // Prompt for tags (multi-select QuickPick with custom entry)
         const tagSuggestions = ['javascript', 'typescript', 'react', 'node', 'html', 'css', 'express', 'api', 'frontend', 'backend'];
-        let allTags = [...tagSuggestions];
-        let selectedTags = [];
-        const quickPick = vscode.window.createQuickPick();
-        quickPick.items = allTags.map(label => ({ label }));
-        quickPick.canSelectMany = true;
-        quickPick.title = 'Select tags for your snippet';
-        quickPick.placeholder = 'Pick tags or type a new tag and press Enter to add';
-
-        let lastValue = '';
-        quickPick.onDidChangeValue(value => {
-            lastValue = value;
-        });
-
-        const snippetTags = await new Promise(resolve => {
-            quickPick.onDidAccept(() => {
-                // If user typed a custom value and pressed Enter, add it to the list
-                if (
-                    lastValue &&
-                    !allTags.includes(lastValue) &&
-                    !quickPick.items.some(item => item.label === lastValue)
-                ) {
-                    // Preserve previous selections
-                    const prevSelectedLabels = quickPick.selectedItems.map(item => item.label);
-                    allTags = [lastValue, ...allTags];
-                    quickPick.items = allTags.map(label => ({ label }));
-                    // Restore previous selections and add the new one
-                    quickPick.selectedItems = quickPick.items.filter(item => prevSelectedLabels.includes(item.label) || item.label === lastValue);
-                    quickPick.value = '';
-                    lastValue = '';
-                    quickPick.title = 'Select tags for your snippet';
-                    quickPick.placeholder = 'Pick tags or type a new tag and press Enter to add';
-                    return; // Don't close, let user keep picking
-                }
-                resolve(quickPick.selectedItems.map(item => item.label));
-                quickPick.hide();
-            });
-            quickPick.show();
+        const snippetTags = await this.getMultiSelectQuickPick({
+            suggestions: tagSuggestions,
+            title: 'Select tags for your snippet',
+            placeholder: 'Pick tags or type a new tag and press Enter to add',
+            canSelectMany: true
         });
 
         let snippetIndex = this.snippets.findIndex(s => s.name === snippetName);
